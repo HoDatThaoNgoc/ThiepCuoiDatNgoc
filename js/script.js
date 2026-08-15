@@ -4,8 +4,8 @@
    ★ CHỈNH SỬA THÔNG TIN TẠI ĐÂY (CONFIG) ★
    ============================================================ */
 const CONFIG = {
-  // Ngày giờ tổ chức (đồng hồ đếm ngược chạy theo mốc này)
-  weddingDateISO: "2026-11-15T18:00:00+07:00",
+  // Ngày giờ tổ chức (đồng hồ đếm ngược + lịch Save The Date chạy theo mốc này)
+  weddingDateISO: "2026-10-25T18:00:00+07:00",
 
   // Link Google Maps của 2 địa điểm (dán link vào đây)
   mapGroom: "https://www.google.com/maps",   // Tiệc cưới nhà trai
@@ -291,6 +291,58 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
 /* Link bản đồ từ CONFIG */
 document.querySelector('[data-map="groom"]').href = CONFIG.mapGroom;
 document.querySelector('[data-map="bride"]').href = CONFIG.mapBride;
+
+/* ============================================================
+   MENU CHỈ HIỆN KHI CUỘN QUA ẢNH ĐẦU (HERO)
+   ============================================================ */
+const topNav = document.getElementById("top-nav");
+function toggleNav() {
+  const hero = document.getElementById("hero");
+  const trigger = hero.offsetTop + hero.offsetHeight - 90;
+  topNav.classList.toggle("show", window.scrollY > trigger);
+}
+window.addEventListener("scroll", toggleNav, { passive: true });
+toggleNav();
+
+/* ============================================================
+   LỊCH "SAVE THE DATE" — tự dựng theo ngày cưới trong CONFIG
+   ============================================================ */
+function buildCalendar() {
+  const d = new Date(CONFIG.weddingDateISO);
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const day = d.getDate();
+  document.getElementById("cal-title").textContent = "Tháng " + (month + 1) + ", " + year;
+
+  const grid = document.getElementById("cal-grid");
+  ["T2", "T3", "T4", "T5", "T6", "T7", "CN"].forEach((t) => {
+    const el = document.createElement("div");
+    el.className = "cal-dow";
+    el.textContent = t;
+    grid.appendChild(el);
+  });
+
+  // Tuần bắt đầu từ Thứ 2
+  const lead = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let i = 0; i < lead; i++) grid.appendChild(document.createElement("div"));
+
+  for (let dd = 1; dd <= daysInMonth; dd++) {
+    const cell = document.createElement("div");
+    cell.className = "cal-day";
+    if (dd === day) {
+      cell.classList.add("marked");
+      cell.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
+        '<path d="M12 21s-7.5-4.9-10-9.2C.3 8.4 2.3 4.5 6 4.1c2.1-.2 4 .9 6 3 2-2.1 3.9-3.2 6-3 3.7.4 5.7 4.3 4 7.7C19.5 16.1 12 21 12 21z"/></svg>';
+    }
+    const num = document.createElement("span");
+    num.textContent = dd;
+    cell.appendChild(num);
+    grid.appendChild(cell);
+  }
+}
+buildCalendar();
 
 /* ============================================================
    CÁNH HOA RƠI

@@ -497,8 +497,69 @@ img { display: block; max-width: 100%; }
   100% { transform: translateY(105vh) translateX(-3vw) rotate(480deg); opacity: 0.4; }
 }
 
+/* ================= MENU ĐIỀU HƯỚNG ================= */
+#top-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 600;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 16px 48px;
+  background: rgba(250, 247, 242, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 16px rgba(93, 74, 24, 0.08);
+  /* Ẩn khi chưa cuộn qua ảnh đầu */
+  transform: translateY(-100%);
+  opacity: 0; visibility: hidden;
+  transition: transform 0.45s ease, opacity 0.45s ease, visibility 0.45s;
+}
+#top-nav.show { transform: translateY(0); opacity: 1; visibility: visible; }
+#top-nav a { text-decoration: none; color: var(--text); }
+.nav-left { justify-self: start; display: flex; gap: 36px; }
+.nav-right { justify-self: end; display: flex; gap: 36px; }
+.nav-left a, .nav-right a {
+  font-size: 0.78rem; font-weight: 500; letter-spacing: 0.22em;
+  text-transform: uppercase; transition: color 0.25s;
+}
+.nav-left a:hover, .nav-right a:hover { color: var(--gold-dark); }
+.nav-logo {
+  font-family: "Playfair Display", serif;
+  font-size: 1.5rem; letter-spacing: 0.06em;
+}
+section[id], footer[id] { scroll-margin-top: 76px; }
+
+/* ================= LỊCH SAVE THE DATE ================= */
+.cal-card {
+  max-width: 920px; margin: 0 auto;
+  border-radius: 26px; padding: 58px 42px 50px;
+  background: linear-gradient(165deg, #fbf2f4 0%, #f1dbe2 100%);
+  box-shadow: 0 18px 50px rgba(190, 140, 160, 0.16);
+}
+.cal-head { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.cal-head i { width: 90px; height: 1px; background: rgba(74, 59, 65, 0.28); }
+.cal-head h3 {
+  font-family: "Playfair Display", serif; font-weight: 500;
+  font-size: clamp(1.6rem, 5vw, 2.3rem); color: #463a40;
+}
+.cal-sub {
+  margin: 16px 0 40px; text-align: center;
+  font-size: 0.78rem; letter-spacing: 0.42em; text-transform: uppercase;
+  color: #d8899b;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  row-gap: 20px; max-width: 660px; margin: 0 auto; text-align: center;
+}
+.cal-dow { font-weight: 600; font-size: 0.92rem; color: #3f3539; }
+.cal-day {
+  position: relative; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Playfair Display", serif; font-size: 1.05rem; color: #4a3b41;
+}
+.cal-day svg { position: absolute; width: 44px; height: 40px; color: #d8899b; }
+.cal-day.marked span { position: relative; color: #b96a80; }
+
 /* ================= RESPONSIVE ================= */
 @media (max-width: 860px) {
+  #top-nav { padding: 14px 20px; }
+  .nav-left, .nav-right { gap: 22px; }
   .couple-grid { grid-template-columns: 1fr; gap: 8px; }
   .couple-heart { margin: 4px 0; }
   .story-wrap { grid-template-columns: 1fr; gap: 34px; }
@@ -509,6 +570,14 @@ img { display: block; max-width: 100%; }
 }
 @media (max-width: 480px) {
   .section { padding: 64px 16px; }
+  #top-nav { grid-template-columns: 1fr; row-gap: 8px; padding: 10px 12px 12px; }
+  .nav-logo { order: -1; font-size: 1.25rem; }
+  .nav-left, .nav-right { justify-self: center; gap: 18px; }
+  .nav-left a, .nav-right a { font-size: 0.66rem; letter-spacing: 0.16em; }
+  .cal-card { padding: 40px 16px 36px; border-radius: 20px; }
+  .cal-grid { row-gap: 12px; }
+  .cal-day { height: 38px; font-size: 0.92rem; }
+  .cal-day svg { width: 36px; height: 33px; }
   .gallery-grid { columns: 2; column-gap: 10px; }
   .gallery-grid .g-item { margin-bottom: 10px; }
   .env-letter { left: 5%; right: 5%; }
