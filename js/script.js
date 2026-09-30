@@ -213,7 +213,7 @@ document.addEventListener("keydown", (e) => {
 const WISH_KEY = "dn_wishes";
 const DEFAULT_WISHES = [
   { name: "Gia Đình", msg: "Chúc hai con trăm năm hạnh phúc, đầu bạc răng long!" },
-  { name: "Hội Bạn Thân", msg: "Chúc mừng hạnh phúc Đạt & Ngọc! Mãi bên nhau bạn nhé ❤️" },
+  { name: "Hội Bạn Thân", msg: "Chúc mừng hạnh phúc Đạt & Ngọc! Mãi bên nhau bạn nhé 💚" },
 ];
 
 function loadWishes() {
