@@ -23,9 +23,13 @@
     <p class="pre-sub">Preparing your invitation...</p>
   </div>
 
-  <!-- ===== PHONG BÌ MỞ THIỆP ===== -->
+  <!-- ===== PHONG BÌ MỞ THIỆP 3D ===== -->
   <div id="envelope-screen" class="hidden">
-    <div class="envelope">
+    <!-- 3D Canvas Box -->
+    <div id="envelope-3d-box"></div>
+
+    <!-- Fallback phong bì CSS (tự ẩn khi 3D tải thành công) -->
+    <div class="envelope" id="envelope-fallback">
       <div class="env-back"></div>
       <div class="env-letter">
         <p class="env-small">Thiệp Cưới</p>
@@ -36,10 +40,90 @@
       <div class="env-seal">
         <svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><path d="M12 21s-7.5-4.9-10-9.2C.3 8.4 2.3 4.5 6 4.1c2.1-.2 4 .9 6 3 2-2.1 3.9-3.2 6-3 3.7.4 5.7 4.3 4 7.7C19.5 16.1 12 21 12 21z"/></svg>
       </div>
+      <p class="env-greeting">Trân trọng gửi đến</p>
+      <p class="env-guest" id="env-guest-name">Quý Khách</p>
     </div>
-    <p class="env-greeting">Trân trọng gửi đến</p>
-    <p class="env-guest" id="env-guest-name">Quý Khách</p>
-    <button id="open-invite" class="btn-gold">💌 Mở Thiệp</button>
+
+    <div class="env-controls">
+      <p class="env-hint" id="env-hint">✨ Vuốt để xoay 360° • Chạm con dấu để mở thiệp ✨</p>
+      <div class="env-btn-group">
+        <button id="open-invite" class="btn-gold">💌 Mở Thiệp</button>
+        <button id="view-card-btn" class="btn-gold btn-view-card hidden">📜 Xem Toàn Bộ Thiệp</button>
+      </div>
+    </div>
+
+    <!-- BẢN THIỆP MỜI TRANG TRỌNG (FULL DIGITAL INVITATION CARD) -->
+    <div id="letter-modal" class="letter-modal hidden">
+      <div class="letter-backdrop" id="letter-backdrop"></div>
+      <div class="letter-card-container">
+        <button class="letter-close-btn" id="letter-close-btn" aria-label="Đóng hoặc ngắm thiệp 3D">✕</button>
+        <div class="royal-letter-card">
+          <div class="royal-corner top-left">❦</div>
+          <div class="royal-corner top-right">❦</div>
+          <div class="royal-corner bottom-left">❦</div>
+          <div class="royal-corner bottom-right">❦</div>
+
+          <p class="rl-header">— ❦ SAVE THE DATE ❦ —</p>
+          <p class="rl-subhead">TRÂN TRỌNG BÁO HỶ &amp; KÍNH MỜI</p>
+
+          <div class="rl-couple">
+            <div class="rl-person">
+              <span class="rl-role">Út Nam</span>
+              <h2 class="rl-name">HỒ ĐẠT</h2>
+            </div>
+            <div class="rl-amp">&amp;</div>
+            <div class="rl-person">
+              <span class="rl-role">Thứ Nữ</span>
+              <h2 class="rl-name">THẢO NGỌC</h2>
+            </div>
+          </div>
+
+          <div class="rl-divider"><i></i><span>💚</span><i></i></div>
+
+          <p class="rl-guest">Kính mời: <b id="rl-guest-name">Quý Khách</b></p>
+          <p class="rl-intro">Đến dự buổi tiệc chung vui, chia sẻ niềm hạnh phúc cùng gia đình chúng tôi</p>
+
+          <div class="rl-parents-grid">
+            <div class="rl-parent-box">
+              <h4>NHÀ TRAI</h4>
+              <p>Ông: <b>HỒ VĂN NHUNG</b></p>
+              <p>Bà: <b>VŨ THỊ LÝ</b></p>
+              <p class="rl-addr">📍 Số 455 Lê Thái Tổ, P. Tân Dân, Thanh Hóa</p>
+            </div>
+            <div class="rl-parent-box">
+              <h4>NHÀ GÁI</h4>
+              <p>Ông: <b>NGUYỄN ĐỨC MẠNH</b></p>
+              <p>Bà: <b>LÊ THỊ KIM PHƯƠNG</b></p>
+              <p class="rl-addr">📍 Số 132 Phố Huyện, P. Quốc Oai, Hà Nội</p>
+            </div>
+          </div>
+
+          <div class="rl-events">
+            <div class="rl-event-item">
+              <div class="rl-event-badge">💍 LỄ VU QUY (HÀ NỘI)</div>
+              <p class="rl-event-time">🍽️ Tiệc Mừng: <b>16:00</b> • Thứ Ba, 20.10.2026 (11.09 ÂL)</p>
+              <p class="rl-event-time">💒 Lễ Vu Quy: <b>10:00</b> • Thứ Tư, 21.10.2026 (12.09 ÂL)</p>
+              <p class="rl-event-venue">📍 Tại: <b>GIA HƯNG</b> — Số 01 Đường Hoàng Xá, Thôn Phủ Quốc, Quốc Oai, Hà Nội</p>
+            </div>
+            <div class="rl-event-item">
+              <div class="rl-event-badge">💒 LỄ THÀNH HÔN (THANH HÓA)</div>
+              <p class="rl-event-time">💒 Lễ Thành Hôn: <b>09:00</b> • Chủ Nhật, 25.10.2026 (16.09 ÂL)</p>
+              <p class="rl-event-time">🍽️ Tiệc Chung Vui: <b>10:00</b> • Chủ Nhật, 25.10.2026 (16.09 ÂL)</p>
+              <p class="rl-event-venue">📍 Tại: <b>NHÀ ĐA NĂNG PHƯỜNG TÂN DÂN</b> — Phường Tân Dân, Tỉnh Thanh Hóa</p>
+            </div>
+          </div>
+
+          <p class="rl-quote">
+            "Thật sự hạnh phúc và vinh dự khi nhận được tình cảm<br />
+            và sự hiện diện của mọi người trong ngày vui của gia đình!"
+          </p>
+
+          <div class="rl-actions">
+            <button id="rl-proceed-btn" class="btn-gold">✨ Khám Phá Toàn Bộ Lễ Cưới ⬇</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== NỘI DUNG CHÍNH ===== -->
@@ -66,8 +150,8 @@
         <p class="hero-script reveal">Save The Date</p>
         <h1 class="hero-names reveal">Hồ Đạt <span class="amp">&amp;</span> Thảo Ngọc</h1>
         <div class="hero-divider reveal"><span>❧</span></div>
-        <p class="hero-date reveal">25 . 10 . 2026</p>
-        <p class="hero-city reveal">Hà Nội, Việt Nam</p>
+        <p class="hero-date reveal">21.10 — 25.10.2026</p>
+        <p class="hero-city reveal">Hà Nội — Thanh Hóa</p>
       </div>
       <div class="scroll-hint"><span></span></div>
     </section>
@@ -81,16 +165,75 @@
       </div>
     </section>
 
-    <!-- LỜI MỜI -->
+    <!-- LỜI MỜI TRÂN TRỌNG -->
     <section id="invitation" class="section">
-      <p class="sec-script reveal">Lễ Thành Hôn</p>
+      <p class="sec-script reveal">Thiệp Báo Hỷ</p>
       <h2 class="sec-title reveal">Trân Trọng Kính Mời</h2>
       <div class="sec-divider reveal"><i></i><span>❧</span><i></i></div>
-      <p class="invite-guest reveal" id="invite-guest-name">Quý Khách</p>
-      <p class="invite-text reveal">
-        Đến dự buổi tiệc chung vui, chia sẻ niềm hạnh phúc<br />
-        cùng gia đình chúng tôi trong ngày trọng đại
-      </p>
+      
+      <div class="invitation-card-wrap reveal">
+        <div class="royal-letter-card formal-mode">
+          <div class="royal-corner top-left">❦</div>
+          <div class="royal-corner top-right">❦</div>
+          <div class="royal-corner bottom-left">❦</div>
+          <div class="royal-corner bottom-right">❦</div>
+
+          <p class="rl-header">— ❦ SAVE THE DATE ❦ —</p>
+          <p class="rl-subhead">TRÂN TRỌNG BÁO HỶ &amp; KÍNH MỜI</p>
+
+          <div class="rl-couple">
+            <div class="rl-person">
+              <span class="rl-role">Út Nam</span>
+              <h3 class="rl-name">HỒ ĐẠT</h3>
+            </div>
+            <div class="rl-amp">&amp;</div>
+            <div class="rl-person">
+              <span class="rl-role">Thứ Nữ</span>
+              <h3 class="rl-name">THẢO NGỌC</h3>
+            </div>
+          </div>
+
+          <div class="rl-divider"><i></i><span>💚</span><i></i></div>
+
+          <p class="rl-guest">Kính mời: <b class="guest-name-bound" id="invite-guest-name">Quý Khách</b></p>
+          <p class="rl-intro">Đến dự buổi tiệc chung vui, chia sẻ niềm hạnh phúc cùng gia đình chúng tôi trong ngày trọng đại</p>
+
+          <div class="rl-parents-grid">
+            <div class="rl-parent-box">
+              <h4>NHÀ TRAI</h4>
+              <p>Ông: <b>HỒ VĂN NHUNG</b></p>
+              <p>Bà: <b>VŨ THỊ LÝ</b></p>
+              <p class="rl-addr">📍 Số 455 Lê Thái Tổ, P. Tân Dân, Thanh Hóa</p>
+            </div>
+            <div class="rl-parent-box">
+              <h4>NHÀ GÁI</h4>
+              <p>Ông: <b>NGUYỄN ĐỨC MẠNH</b></p>
+              <p>Bà: <b>LÊ THỊ KIM PHƯƠNG</b></p>
+              <p class="rl-addr">📍 Số 132 Phố Huyện, P. Quốc Oai, Hà Nội</p>
+            </div>
+          </div>
+
+          <div class="rl-events">
+            <div class="rl-event-item">
+              <div class="rl-event-badge">💍 LỄ VU QUY (HÀ NỘI)</div>
+              <p class="rl-event-time">🍽️ Tiệc Mừng: <b>16:00</b> • Thứ Ba, 20.10.2026 (11.09 ÂL)</p>
+              <p class="rl-event-time">💒 Lễ Vu Quy: <b>10:00</b> • Thứ Tư, 21.10.2026 (12.09 ÂL)</p>
+              <p class="rl-event-venue">📍 Tại: <b>GIA HƯNG</b> — Số 01 Đường Hoàng Xá, Thôn Phủ Quốc, Quốc Oai, Hà Nội</p>
+            </div>
+            <div class="rl-event-item">
+              <div class="rl-event-badge">💒 LỄ THÀNH HÔN (THANH HÓA)</div>
+              <p class="rl-event-time">💒 Lễ Thành Hôn: <b>09:00</b> • Chủ Nhật, 25.10.2026 (16.09 ÂL)</p>
+              <p class="rl-event-time">🍽️ Tiệc Chung Vui: <b>10:00</b> • Chủ Nhật, 25.10.2026 (16.09 ÂL)</p>
+              <p class="rl-event-venue">📍 Tại: <b>NHÀ ĐA NĂNG PHƯỜNG TÂN DÂN</b> — Phường Tân Dân, Tỉnh Thanh Hóa</p>
+            </div>
+          </div>
+
+          <p class="rl-quote">
+            "Thật sự hạnh phúc và vinh dự khi nhận được tình cảm<br />
+            và sự hiện diện của mọi người trong ngày vui của gia đình!"
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- ĐÔI NÉT VỀ CHÚNG TÔI -->
@@ -103,18 +246,28 @@
           <div class="person-photo groom-photo">
             <img src="1 (4).webp" alt="Chú rể Hồ Đạt" loading="lazy" decoding="async" />
           </div>
-          <p class="person-role">Chú Rể</p>
+          <p class="person-role">Chú Rể • Út Nam</p>
           <h3 class="person-name">Hồ Đạt</h3>
-          <p class="person-parents">Con của Ông: Hồ Văn Nhung<br />và Bà: Vũ Thị Lý</p>
+          <p class="person-parents">
+            <b>Nhà Trai</b><br />
+            Ông: <b>HỒ VĂN NHUNG</b><br />
+            Bà: <b>VŨ THỊ LÝ</b><br />
+            <span class="person-address">📍 Số 455 Lê Thái Tổ, P. Tân Dân, Thanh Hóa</span>
+          </p>
         </div>
         <div class="couple-heart reveal">💚</div>
         <div class="person-card reveal">
           <div class="person-photo bride-photo">
             <img src="1 (12).webp" alt="Cô dâu Thảo Ngọc" loading="lazy" decoding="async" />
           </div>
-          <p class="person-role">Cô Dâu</p>
+          <p class="person-role">Cô Dâu • Thứ Nữ</p>
           <h3 class="person-name">Thảo Ngọc</h3>
-          <p class="person-parents">Con của Ông: Nguyễn Văn Mạnh<br />và Bà: Lê Thị Kim phương</p>
+          <p class="person-parents">
+            <b>Nhà Gái</b><br />
+            Ông: <b>NGUYỄN ĐỨC MẠNH</b><br />
+            Bà: <b>LÊ THỊ KIM PHƯƠNG</b><br />
+            <span class="person-address">📍 Số 132 Phố Huyện, P. Quốc Oai, Hà Nội</span>
+          </p>
         </div>
       </div>
     </section>
@@ -178,22 +331,28 @@
       <div class="sec-divider reveal"><i></i><span>❧</span><i></i></div>
       <div class="timeline">
         <div class="tl-item reveal">
-          <div class="tl-icon">📷</div>
-          <div class="tl-time">18:00</div>
-          <h4>Đón Khách</h4>
-          <p>Chụp ảnh lưu niệm cùng cô dâu chú rể</p>
+          <div class="tl-icon">🥂</div>
+          <div class="tl-time">16:00 • 20.10</div>
+          <h4>Tiệc Mừng Nhà Gái</h4>
+          <p>Bữa tiệc chung vui cùng gia đình<br />📍 Gia Hưng, Quốc Oai, Hà Nội</p>
         </div>
         <div class="tl-item reveal">
           <div class="tl-icon">💍</div>
-          <div class="tl-time">18:30</div>
-          <h4>Làm Lễ</h4>
-          <p>Nghi thức thành hôn trang trọng</p>
+          <div class="tl-time">10:00 • 21.10</div>
+          <h4>Lễ Vu Quy</h4>
+          <p>Nghi thức vu quy trang trọng<br />📍 Gia Hưng, Quốc Oai, Hà Nội</p>
         </div>
         <div class="tl-item reveal">
-          <div class="tl-icon">🥂</div>
-          <div class="tl-time">19:00</div>
-          <h4>Khai Tiệc</h4>
-          <p>Cùng nâng ly chúc mừng hạnh phúc</p>
+          <div class="tl-icon">💒</div>
+          <div class="tl-time">09:00 • 25.10</div>
+          <h4>Lễ Thành Hôn</h4>
+          <p>Nghi thức thành hôn nhà trai<br />📍 Nhà Đa Năng P. Tân Dân, Thanh Hóa</p>
+        </div>
+        <div class="tl-item reveal">
+          <div class="tl-icon">🎉</div>
+          <div class="tl-time">10:00 • 25.10</div>
+          <h4>Tiệc Mừng Hạnh Phúc</h4>
+          <p>Khai tiệc mừng cùng quan viên hai họ<br />📍 Nhà Đa Năng P. Tân Dân, Thanh Hóa</p>
         </div>
       </div>
     </section>
@@ -207,19 +366,21 @@
         <div class="venue-card reveal">
           <div class="venue-photo"><img src="1 (5).webp" alt="Tiệc cưới nhà trai" loading="lazy" decoding="async" /></div>
           <div class="venue-body">
-            <h3>TIỆC CƯỚI NHÀ TRAI</h3>
-            <p class="venue-time">🕕 18:00 | Chủ Nhật | 25.10.2026</p>
-            <p class="venue-address">📍 Tư Gia Nhà Trai — Thanh Hóa</p>
-            <a class="btn-outline" href="https://www.google.com/maps" target="_blank" rel="noopener" data-map="groom">Xem Bản Đồ</a>
+            <h3>TIỆC CƯỚI &amp; LỄ THÀNH HÔN (NHÀ TRAI)</h3>
+            <p class="venue-time">💒 Lễ Thành Hôn: <b>09:00</b> | Chủ Nhật | 25.10.2026</p>
+            <p class="venue-time">🍽️ Tiệc Chung Vui: <b>10:00</b> | 25.10.2026 (16.09 ÂL)</p>
+            <p class="venue-address">📍 NHÀ ĐA NĂNG PHƯỜNG TÂN DÂN<br />Phường Tân Dân, Tỉnh Thanh Hóa</p>
+            <a class="btn-outline" href="https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+%C4%90a+N%C4%83ng+Ph%C6%B0%E1%BB%9Dng+T%C3%A2n+D%C3%A2n+Thanh+H%C3%B3a" target="_blank" rel="noopener" data-map="groom">Xem Bản Đồ</a>
           </div>
         </div>
         <div class="venue-card reveal">
           <div class="venue-photo"><img src="1 (22).webp" alt="Lễ vu quy nhà gái" loading="lazy" decoding="async" /></div>
           <div class="venue-body">
-            <h3>LỄ VU QUY NHÀ GÁI</h3>
-            <p class="venue-time">🕖 08:00 | Chủ Nhật | 25.10.2026</p>
-            <p class="venue-address">📍 Tư Gia Nhà Gái — Hà Nội</p>
-            <a class="btn-outline" href="https://www.google.com/maps" target="_blank" rel="noopener" data-map="bride">Xem Bản Đồ</a>
+            <h3>TIỆC MỪNG &amp; LỄ VU QUY (NHÀ GÁI)</h3>
+            <p class="venue-time">🍽️ Tiệc Mừng: <b>16:00</b> | Thứ Ba | 20.10.2026 (11.09 ÂL)</p>
+            <p class="venue-time">💒 Lễ Vu Quy: <b>10:00</b> | Thứ Tư | 21.10.2026 (12.09 ÂL)</p>
+            <p class="venue-address">📍 TẠI: GIA HƯNG<br />Số 01 Đường Hoàng Xá, Thôn Phủ Quốc, Quốc Oai, Hà Nội</p>
+            <a class="btn-outline" href="https://www.google.com/maps/search/?api=1&query=S%E1%BB%91+01+%C4%90%C6%B0%E1%BB%9Dng+Ho%C3%A0ng+X%C3%A1+Qu%E1%BB%91c+Oai+H%C3%A0+N%E1%BB%99i" target="_blank" rel="noopener" data-map="bride">Xem Bản Đồ</a>
           </div>
         </div>
       </div>
@@ -230,6 +391,17 @@
       <p class="sec-script reveal">Khoảnh Khắc</p>
       <h2 class="sec-title reveal">Album Ảnh Cưới</h2>
       <div class="sec-divider reveal"><i></i><span>❧</span><i></i></div>
+
+      <!-- VÒNG QUAY ẢNH 3D VÔ CỰC (THREE.JS 3D CAROUSEL) -->
+      <div id="carousel-3d-wrap" class="reveal">
+        <p class="carousel-hint">✨ Vuốt ngang để xoay 360° • Chạm ảnh để phóng to ✨</p>
+        <div id="carousel-3d-container"></div>
+        <div class="carousel-nav">
+          <button id="car-prev" class="car-btn" aria-label="Ảnh trước">‹</button>
+          <button id="car-next" class="car-btn" aria-label="Ảnh sau">›</button>
+        </div>
+      </div>
+
       <div class="gallery-grid" id="gallery-grid"></div>
     </section>
 
@@ -325,9 +497,12 @@
       <div class="thanks-overlay"></div>
       <div class="thanks-content">
         <p class="thanks-script reveal">Thank You!</p>
-        <p class="thanks-text reveal">Rất hân hạnh được đón tiếp bạn<br />trong ngày hạnh phúc của chúng mình</p>
+        <p class="thanks-text reveal">
+          "Thật sự hạnh phúc và vinh dự khi nhận được tình cảm<br />
+          và sự hiện diện của mọi người trong ngày vui của gia đình!"
+        </p>
         <p class="thanks-names reveal">Hồ Đạt &amp; Thảo Ngọc</p>
-        <p class="thanks-date reveal">25 . 10 . 2026</p>
+        <p class="thanks-date reveal">21.10 — 25.10.2026</p>
       </div>
     </footer>
   </main>
@@ -338,9 +513,12 @@
   </button>
   <audio id="bg-music" loop preload="none" src="Váy Cưới.mp3"></audio>
 
-  <!-- CÁNH HOA RƠI -->
+  <!-- CÁNH HOA RƠI 3D (THREE.JS CANVAS) -->
+  <canvas id="petals-canvas"></canvas>
   <div id="petals"></div>
 
+  <script src="js/three.min.js"></script>
+  <script src="js/three-scene.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>

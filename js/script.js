@@ -4,12 +4,12 @@
    ★ CHỈNH SỬA THÔNG TIN TẠI ĐÂY (CONFIG) ★
    ============================================================ */
 const CONFIG = {
-  // Ngày giờ tổ chức (đồng hồ đếm ngược + lịch Save The Date chạy theo mốc này)
-  weddingDateISO: "2026-10-25T18:00:00+07:00",
+  // Ngày giờ tổ chức Lễ Thành Hôn chính thức (đồng hồ đếm ngược chạy theo mốc này)
+  weddingDateISO: "2026-10-25T09:00:00+07:00",
 
-  // Link Google Maps của 2 địa điểm (dán link vào đây)
-  mapGroom: "https://www.google.com/maps",   // Tiệc cưới nhà trai
-  mapBride: "https://www.google.com/maps",   // Lễ vu quy nhà gái
+  // Link Google Maps của 2 địa điểm chính xác từ thiệp cưới
+  mapGroom: "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+%C4%90a+N%C4%83ng+Ph%C6%B0%E1%BB%9Dng+T%C3%A2n+D%C3%A2n+Thanh+H%C3%B3a",   // Nhà Đa Năng P. Tân Dân, Thanh Hóa
+  mapBride: "https://www.google.com/maps/search/?api=1&query=S%E1%BB%91+01+%C4%90%C6%B0%E1%BB%9Dng+Ho%C3%A0ng+X%C3%A1+Qu%E1%BB%91c+Oai+H%C3%A0+N%E1%BB%99i",   // Gia Hưng, Quốc Oai, Hà Nội
 
   // Tài khoản ngân hàng nhận mừng cưới.
   // bankCode dùng mã VietQR: MB, VCB, TCB, ACB, VPB, BIDV, CTG, STB...
@@ -56,34 +56,110 @@ bgMusic.volume = 0.55;
 document.body.style.overflow = "hidden"; // khóa cuộn khi chưa mở thiệp
 
 let envelopeShown = false;
+let threeEnvelope = null;
+
+function revealInvitationContent() {
+  window.hideLetterModal();
+  envelopeScreen.classList.add("opened");
+  mainContent.classList.remove("hidden");
+  musicBtn.classList.remove("hidden");
+  document.body.style.overflow = "";
+  initReveal();
+  initLazyBackgrounds();
+  start3DPetals();
+  init3DGalleryCarousel();
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   BẢN THIỆP MỜI TRANG TRỌNG (FULL DIGITAL LETTER MODAL)
+   ============================================================ */
+window.showLetterModal = function() {
+  const modal = document.getElementById("letter-modal");
+  const guest = getGuestName();
+  const guestEl = document.getElementById("rl-guest-name");
+  if (guestEl) guestEl.textContent = guest;
+  if (modal) {
+    modal.classList.remove("hidden");
+    void modal.offsetWidth; // trigger reflow for smooth transition
+    modal.classList.add("show");
+  }
+  const viewBtn = document.getElementById("view-card-btn");
+  if (viewBtn) viewBtn.classList.remove("hidden");
+};
+
+window.hideLetterModal = function() {
+  const modal = document.getElementById("letter-modal");
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => modal.classList.add("hidden"), 400);
+  }
+};
+
+// Gán sự kiện cho các nút điều khiển của thiệp
+const letterCloseBtn = document.getElementById("letter-close-btn");
+if (letterCloseBtn) letterCloseBtn.addEventListener("click", window.hideLetterModal);
+
+const letterBackdrop = document.getElementById("letter-backdrop");
+if (letterBackdrop) letterBackdrop.addEventListener("click", window.hideLetterModal);
+
+const rlProceedBtn = document.getElementById("rl-proceed-btn");
+if (rlProceedBtn) rlProceedBtn.addEventListener("click", revealInvitationContent);
+
+const viewCardBtn = document.getElementById("view-card-btn");
+if (viewCardBtn) viewCardBtn.addEventListener("click", window.showLetterModal);
+
 function showEnvelope() {
   if (envelopeShown) return;
   envelopeShown = true;
-  document.getElementById("env-guest-name").textContent = getGuestName();
+  const guest = getGuestName();
+  document.getElementById("env-guest-name").textContent = guest;
+  const inviteGuest = document.getElementById("invite-guest-name");
+  if (inviteGuest) inviteGuest.textContent = guest;
+  const rlGuest = document.getElementById("rl-guest-name");
+  if (rlGuest) rlGuest.textContent = guest;
+
   preloader.classList.add("fade");
   envelopeScreen.classList.remove("hidden");
+
+  // Khởi tạo phong bì Three.js 3D
+  if (window.ThreeWedding && window.ThreeWedding.isSupported()) {
+    const box = document.getElementById("envelope-3d-box");
+    threeEnvelope = window.ThreeWedding.init3DEnvelope({
+      container: box,
+      guestName: guest,
+      onOpen: revealInvitationContent,
+    });
+    if (threeEnvelope) {
+      envelopeScreen.classList.add("three-active");
+    }
+  }
 }
 window.addEventListener("load", () => setTimeout(showEnvelope, 1100));
 // Dự phòng: nếu tải lâu quá 4.5s vẫn hiện phong bì
 setTimeout(showEnvelope, 4500);
 
 document.getElementById("open-invite").addEventListener("click", () => {
-  const envelope = document.querySelector(".envelope");
-  envelope.classList.add("open");
-
-  // phát nhạc ngay khi khách bấm mở thiệp (được trình duyệt cho phép vì có thao tác click)
+  // Phát nhạc ngay khi khách bấm mở thiệp
   bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
 
-  setTimeout(() => {
-    envelopeScreen.classList.add("opened");
-    mainContent.classList.remove("hidden");
-    musicBtn.classList.remove("hidden");
-    document.body.style.overflow = "";
-    initReveal();
-    initLazyBackgrounds();
-    startPetals();
-    window.scrollTo(0, 0);
-  }, 1200);
+  if (threeEnvelope) {
+    threeEnvelope.triggerOpen();
+  } else {
+    // Fallback phong bì CSS
+    const envelope = document.querySelector(".envelope");
+    if (envelope) envelope.classList.add("open");
+    setTimeout(() => {
+      window.showLetterModal();
+    }, 700);
+  }
+});
+
+// Cho phép chạm vào canvas 3D cũng kích hoạt phát nhạc
+document.getElementById("envelope-3d-box").addEventListener("click", () => {
+  if (bgMusic.paused) {
+    bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
+  }
 });
 
 /* ============================================================
@@ -354,11 +430,20 @@ function buildCalendar() {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   for (let i = 0; i < lead; i++) grid.appendChild(document.createElement("div"));
 
+  const specialDays = {
+    20: { label: "Tiệc mừng Nhà Gái (Quốc Oai, Hà Nội)" },
+    21: { label: "Lễ Vu Quy Nhà Gái (Quốc Oai, Hà Nội)", isMain: true },
+    25: { label: "Lễ Thành Hôn Nhà Trai (Tân Dân, Thanh Hóa)", isMain: true },
+  };
+
   for (let dd = 1; dd <= daysInMonth; dd++) {
     const cell = document.createElement("div");
     cell.className = "cal-day";
-    if (dd === day) {
+    const info = specialDays[dd];
+
+    if (info) {
       cell.classList.add("marked");
+      cell.title = info.label;
       cell.innerHTML =
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
         '<path d="M12 21s-7.5-4.9-10-9.2C.3 8.4 2.3 4.5 6 4.1c2.1-.2 4 .9 6 3 2-2.1 3.9-3.2 6-3 3.7.4 5.7 4.3 4 7.7C19.5 16.1 12 21 12 21z"/></svg>';
@@ -372,10 +457,23 @@ function buildCalendar() {
 buildCalendar();
 
 /* ============================================================
-   CÁNH HOA RƠI
+   CÁNH HOA RƠI 3D (THREE.JS) HOẶC FALLBACK 2D
    ============================================================ */
+function start3DPetals() {
+  const canvas = document.getElementById("petals-canvas");
+  if (window.ThreeWedding && window.ThreeWedding.isSupported() && canvas) {
+    const pEngine = window.ThreeWedding.init3DPetals(canvas);
+    if (pEngine) {
+      document.body.classList.add("three-petals-active");
+      return;
+    }
+  }
+  startPetals();
+}
+
 function startPetals() {
   const box = document.getElementById("petals");
+  if (!box) return;
   const COUNT = 16;
   for (let i = 0; i < COUNT; i++) {
     const p = document.createElement("div");
@@ -389,3 +487,28 @@ function startPetals() {
     box.appendChild(p);
   }
 }
+
+/* ============================================================
+   VÒNG QUAY ẢNH CƯỚI 3D VÔ CỰC (THREE.JS)
+   ============================================================ */
+let threeCarousel = null;
+function init3DGalleryCarousel() {
+  const container = document.getElementById("carousel-3d-container");
+  if (!container || !window.ThreeWedding || !window.ThreeWedding.isSupported()) return;
+
+  threeCarousel = window.ThreeWedding.init3DCarousel({
+    container: container,
+    photos: PHOTOS,
+    onPhotoClick: (idx, src) => {
+      openLightbox(idx);
+    },
+  });
+
+  if (threeCarousel) {
+    const prevBtn = document.getElementById("car-prev");
+    const nextBtn = document.getElementById("car-next");
+    if (prevBtn) prevBtn.addEventListener("click", () => threeCarousel.step(-1));
+    if (nextBtn) nextBtn.addEventListener("click", () => threeCarousel.step(1));
+  }
+}
+

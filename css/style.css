@@ -51,19 +51,77 @@ img { display: block; max-width: 100%; }
 #envelope-screen {
   position: fixed; inset: 0; z-index: 900;
   background:
-    radial-gradient(circle at 15% 20%, rgba(193, 215, 197, 0.4), transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(111, 156, 123, 0.22), transparent 45%),
+    radial-gradient(circle at 15% 20%, rgba(193, 215, 197, 0.45), transparent 50%),
+    radial-gradient(circle at 85% 80%, rgba(111, 156, 123, 0.25), transparent 50%),
     var(--cream);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 24px; text-align: center;
+  padding: 16px; text-align: center;
   transition: opacity 0.9s ease, visibility 0.9s;
+  overflow: hidden;
 }
-#envelope-screen.opened { opacity: 0; visibility: hidden; }
+#envelope-screen.opened { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* 3D Envelope Three.js Container — Toàn màn hình không bị cắt */
+#envelope-3d-box {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  z-index: 1;
+}
+#envelope-3d-box:active { cursor: grabbing; }
+
+/* Khi 3D nạp thành công thì ẩn phong bì 2D CSS */
+#envelope-screen.three-active #envelope-fallback {
+  display: none !important;
+}
+
+.env-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.env-controls > * {
+  pointer-events: auto;
+}
+.env-btn-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-view-card {
+  background: linear-gradient(135deg, #24432c, #3f6848) !important;
+  box-shadow: 0 8px 24px rgba(36, 67, 44, 0.35) !important;
+}
+.env-hint {
+  font-size: 0.82rem; letter-spacing: 0.06em;
+  color: var(--text-light); margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+  padding: 6px 18px; border-radius: 999px;
+  border: 1px solid rgba(82, 121, 93, 0.2);
+  box-shadow: 0 4px 16px rgba(36, 67, 44, 0.08);
+  animation: pulseHint 2.4s ease-in-out infinite;
+}
+@keyframes pulseHint {
+  0%, 100% { transform: translateY(0); opacity: 0.92; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
 
 .envelope {
   position: relative; width: min(340px, 84vw); height: 230px;
-  margin-bottom: 34px; perspective: 900px;
+  margin-bottom: 24px; perspective: 900px;
 }
 .env-back {
   position: absolute; inset: 0; border-radius: 10px;
@@ -141,7 +199,172 @@ img { display: block; max-width: 100%; }
 }
 .btn-outline:hover { background: var(--gold); color: #fff; }
 
-/* ================= HERO ================= */
+/* ================= THIỆP MỜI HOÀNG GIA (ROYAL LETTER CARD) ================= */
+.letter-modal {
+  position: fixed; inset: 0; z-index: 950;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(18, 34, 22, 0.76);
+  backdrop-filter: blur(10px);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s;
+}
+.letter-modal.show {
+  opacity: 1; visibility: visible;
+}
+.letter-backdrop {
+  position: absolute; inset: 0; cursor: pointer;
+}
+.letter-card-container {
+  position: relative; z-index: 2;
+  width: 100%; max-width: 660px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(12, 26, 16, 0.45);
+  animation: cardPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  -webkit-overflow-scrolling: touch;
+}
+@keyframes cardPop {
+  0% { transform: scale(0.92) translateY(24px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.letter-close-btn {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(82, 121, 93, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--gold-dark); font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.letter-close-btn:hover {
+  transform: scale(1.1); background: #fff;
+}
+
+.royal-letter-card {
+  position: relative;
+  background: linear-gradient(170deg, #ffffff 0%, #fafcf9 60%, #f1f7f2 100%);
+  border: 3px solid #52795d;
+  border-radius: 20px;
+  padding: 38px 30px 32px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.royal-letter-card::before {
+  content: "";
+  position: absolute; inset: 8px;
+  border: 1.5px dashed rgba(82, 121, 93, 0.45);
+  border-radius: 14px; pointer-events: none;
+}
+.royal-corner {
+  position: absolute; color: #52795d; font-size: 22px; pointer-events: none;
+}
+.royal-corner.top-left { top: 12px; left: 14px; }
+.royal-corner.top-right { top: 12px; right: 14px; }
+.royal-corner.bottom-left { bottom: 12px; left: 14px; }
+.royal-corner.bottom-right { bottom: 12px; right: 14px; }
+
+.rl-header {
+  font-family: "Playfair Display", serif;
+  font-size: 0.85rem; letter-spacing: 0.35em;
+  color: #52795d; font-weight: 600; margin-bottom: 4px;
+}
+.rl-subhead {
+  font-size: 0.76rem; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--text-light); margin-bottom: 16px;
+}
+.rl-couple {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin: 10px 0 12px;
+}
+.rl-person .rl-role {
+  display: block; font-size: 0.72rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gold-dark); margin-bottom: 2px;
+}
+.rl-person .rl-name {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+  font-weight: 700; color: #1c3623; margin: 0;
+}
+.rl-amp {
+  font-family: "Dancing Script", cursive;
+  font-size: 2.2rem; color: #52795d; line-height: 1;
+}
+.rl-divider {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin: 10px 0 14px; color: #52795d;
+}
+.rl-divider i {
+  display: block; width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, #52795d);
+}
+.rl-divider i:last-child {
+  background: linear-gradient(90deg, #52795d, transparent);
+}
+.rl-guest {
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  color: #24432c; margin-bottom: 4px;
+}
+.rl-guest b { color: #52795d; }
+.rl-intro {
+  font-size: 0.84rem; color: var(--text-light); line-height: 1.6; margin-bottom: 18px;
+}
+.rl-parents-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 14px; border-radius: 12px;
+  border: 1px solid rgba(82, 121, 93, 0.18);
+  text-align: left;
+}
+.rl-parent-box h4 {
+  font-size: 0.76rem; letter-spacing: 0.2em;
+  color: #52795d; margin-bottom: 6px; text-transform: uppercase;
+}
+.rl-parent-box p {
+  font-size: 0.82rem; line-height: 1.6; color: var(--text);
+}
+.rl-parent-box .rl-addr {
+  font-size: 0.75rem; color: var(--text-light); margin-top: 4px;
+}
+.rl-events {
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;
+  text-align: left;
+}
+.rl-event-item {
+  background: rgba(230, 240, 231, 0.65);
+  border-left: 3px solid #52795d;
+  padding: 10px 14px; border-radius: 0 10px 10px 0;
+}
+.rl-event-badge {
+  font-family: "Playfair Display", serif;
+  font-size: 0.86rem; font-weight: 700; color: #24432c; margin-bottom: 4px;
+}
+.rl-event-time {
+  font-size: 0.82rem; color: var(--text); line-height: 1.6;
+}
+.rl-event-venue {
+  font-size: 0.78rem; color: var(--text-light); line-height: 1.5; margin-top: 2px;
+}
+.rl-quote {
+  font-family: "Playfair Display", serif;
+  font-style: italic; font-size: 0.86rem;
+  color: #3b5a41; line-height: 1.7; margin: 16px 0 20px;
+}
+.rl-actions {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+}
+
+/* Formal mode on #invitation section */
+.invitation-card-wrap {
+  max-width: 680px; margin: 0 auto;
+}
+.royal-letter-card.formal-mode {
+  box-shadow: var(--shadow);
+}
 #hero {
   position: relative; height: 100vh; min-height: 620px;
   display: flex; align-items: center; justify-content: center;
@@ -272,6 +495,17 @@ img { display: block; max-width: 100%; }
 .person-name { font-family: "Playfair Display", serif; font-size: 1.9rem; font-weight: 600; margin: 8px 0 2px; }
 .person-rank { font-size: 0.85rem; font-style: italic; color: var(--text-light); margin-bottom: 12px; }
 .person-parents { font-size: 0.88rem; line-height: 1.9; color: var(--text); }
+.person-address {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  line-height: 1.5;
+  background: rgba(82, 121, 93, 0.08);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px dashed rgba(82, 121, 93, 0.22);
+}
 
 /* ================= CÂU CHUYỆN ================= */
 .story-wrap {
@@ -321,7 +555,7 @@ img { display: block; max-width: 100%; }
 }
 
 /* ================= LỊCH TRÌNH ================= */
-.timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .tl-item {
   background: var(--white); border-radius: 16px;
   padding: 36px 22px 30px; box-shadow: var(--shadow);
@@ -356,6 +590,120 @@ img { display: block; max-width: 100%; }
 .venue-address { font-size: 0.88rem; color: var(--text-light); line-height: 1.7; }
 
 /* ================= ALBUM ẢNH ================= */
+/* VÒNG QUAY ẢNH 3D VÔ CỰC (CSS 3D & NATIVE IMAGES) */
+#carousel-3d-wrap {
+  position: relative;
+  max-width: 1040px;
+  margin: 0 auto 50px;
+  padding: 10px 0;
+}
+.carousel-hint {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  text-align: center;
+}
+#carousel-3d-container {
+  width: 100%;
+  height: 440px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-3d-stage {
+  perspective: 1100px;
+  perspective-origin: 50% 50%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+.carousel-3d-stage:active { cursor: grabbing; }
+.carousel-3d-cylinder {
+  position: relative;
+  width: 220px;
+  height: 310px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.carousel-3d-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--white);
+  padding: 8px;
+  box-shadow: 0 14px 40px rgba(36, 67, 44, 0.16);
+  border: 1.5px solid rgba(193, 215, 197, 0.55);
+  cursor: pointer;
+  backface-visibility: hidden;
+  transition: box-shadow 0.25s;
+}
+.carousel-3d-card:hover {
+  box-shadow: 0 18px 48px rgba(36, 67, 44, 0.28);
+}
+.carousel-3d-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  pointer-events: none;
+}
+.carousel-nav {
+  position: absolute;
+  top: 55%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.car-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-soft);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--gold-dark);
+  font-size: 1.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(36, 67, 44, 0.14);
+  transition: transform 0.25s, background 0.25s, color 0.25s;
+}
+.car-btn:hover {
+  background: var(--white);
+  transform: scale(1.12);
+  color: var(--gold);
+}
+@media (max-width: 600px) {
+  #carousel-3d-container { height: 350px; }
+  .carousel-3d-cylinder { width: 175px; height: 250px; }
+  .car-btn { width: 38px; height: 38px; font-size: 1.35rem; }
+}
+
+.pulse-glow {
+  animation: pulseGlow 1.6s infinite alternate !important;
+}
+@keyframes pulseGlow {
+  0% { transform: scale(1); box-shadow: 0 8px 24px rgba(65, 107, 76, 0.4); }
+  100% { transform: scale(1.05); box-shadow: 0 14px 36px rgba(65, 107, 76, 0.65); }
+}
+
 .gallery-grid { columns: 3; column-gap: 14px; }
 .gallery-grid .g-item {
   break-inside: avoid; margin-bottom: 14px;
@@ -500,7 +848,17 @@ img { display: block; max-width: 100%; }
 #music-btn.playing .music-disc { animation: spin 3s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ================= CÁNH HOA RƠI ================= */
+/* ================= CÁNH HOA RƠI 3D ================= */
+#petals-canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 700;
+}
+body.three-petals-active #petals {
+  display: none !important;
+}
+
 #petals { position: fixed; inset: 0; pointer-events: none; z-index: 700; overflow: hidden; }
 .petal {
   position: absolute; top: -30px;
@@ -578,6 +936,9 @@ section[id], footer[id] { scroll-margin-top: 76px; }
 .cal-day.marked span { position: relative; color: #1c3623; font-weight: 700; }
 
 /* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .timeline { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
 @media (max-width: 860px) {
   #top-nav { padding: 14px 20px; }
   .nav-left, .nav-right { gap: 22px; }
@@ -602,4 +963,9 @@ section[id], footer[id] { scroll-margin-top: 76px; }
   .gallery-grid { columns: 2; column-gap: 10px; }
   .gallery-grid .g-item { margin-bottom: 10px; }
   .env-letter { left: 5%; right: 5%; }
+  .royal-letter-card { padding: 28px 14px 22px; }
+  .rl-parents-grid { grid-template-columns: 1fr; gap: 8px; padding: 10px; }
+  .rl-couple { gap: 10px; }
+  .rl-amp { font-size: 1.8rem; }
+  .letter-card-container { max-height: 94vh; }
 }
