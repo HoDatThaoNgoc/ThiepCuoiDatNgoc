@@ -23,15 +23,13 @@ const CONFIG = {
 
 /* Danh sách toàn bộ ảnh trong album */
 const PHOTOS = [
-  "KL_05974.JPG", "KL_06019.JPG", "KL_06027.JPG", "KL_06034.JPG",
-  "KL_06048.JPG", "KL_06055.JPG", "KL_06060.JPG", "KL_06076.JPG",
-  "KL_06080.JPG", "KL_06091.JPG", "KL_06103.JPG", "KL_06111.JPG",
-  "KL_06122.JPG", "KL_06126.JPG", "KL_06161.JPG", "KL_06168.JPG",
-  "KL_06175.JPG", "KL_06189.JPG", "KL_06193.JPG", "KL_06206.JPG",
-  "KL_06207.JPG", "KL_06221.JPG", "KL_06295.JPG", "KL_06339.JPG",
-  "KL_06342.JPG", "KL_06372.JPG", "KL_06395.JPG", "KL_06396.JPG",
-  "KL_06482.JPG", "KL_06496.JPG", "KL_06508.JPG", "KL_06515.JPG",
-  "KL_06641.JPG", "KL_06818.JPG", "KL_06819.JPG",
+  "1 (1).webp", "1 (2).webp", "1 (3).webp", "1 (4).webp", "1 (5).webp",
+  "1 (6).webp", "1 (7).webp", "1 (8).webp", "1 (9).webp", "1 (10).webp",
+  "1 (11).webp", "1 (12).webp", "1 (13).webp", "1 (14).webp", "1 (15).webp",
+  "1 (16).webp", "1 (17).webp", "1 (18).webp", "1 (19).webp", "1 (20).webp",
+  "1 (21).webp", "1 (22).webp", "1 (23).webp", "1 (24).webp", "1 (25).webp",
+  "1 (26).webp", "1 (27).webp", "1 (28).webp", "1 (29).webp", "1 (30).webp",
+  "1 (31).webp",
 ];
 
 /* ============================================================
@@ -82,6 +80,7 @@ document.getElementById("open-invite").addEventListener("click", () => {
     musicBtn.classList.remove("hidden");
     document.body.style.overflow = "";
     initReveal();
+    initLazyBackgrounds();
     startPetals();
     window.scrollTo(0, 0);
   }, 1200);
@@ -153,10 +152,38 @@ PHOTOS.forEach((src, idx) => {
   img.src = src;
   img.alt = "Ảnh cưới " + (idx + 1);
   img.loading = "lazy";
+  img.decoding = "async";
   item.appendChild(img);
   item.addEventListener("click", () => openLightbox(idx));
   galleryGrid.appendChild(item);
 });
+
+/* ============================================================
+   LAZY LOAD HÌNH NỀN CSS ([data-bg]) CHO MOBILE SIÊU NHANH
+   ============================================================ */
+function initLazyBackgrounds() {
+  const bgElements = document.querySelectorAll("[data-bg]");
+  if ("IntersectionObserver" in window) {
+    const bgObserver = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            el.style.backgroundImage = `url('${el.dataset.bg}')`;
+            obs.unobserve(el);
+          }
+        });
+      },
+      { rootMargin: "350px 0px" }
+    );
+    bgElements.forEach((el) => bgObserver.observe(el));
+  } else {
+    bgElements.forEach((el) => {
+      el.style.backgroundImage = `url('${el.dataset.bg}')`;
+    });
+  }
+}
+initLazyBackgrounds();
 
 function openLightbox(idx) {
   lbIndex = idx;
