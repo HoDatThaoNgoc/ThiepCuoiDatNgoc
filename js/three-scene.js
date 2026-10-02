@@ -79,87 +79,110 @@
     scene.add(dirLight);
 
     const rimLight = new THREE.DirectionalLight(0xc2dec8, 0.45);
-    rimLight.position.set(-5, -4, -3);
-    scene.add(rimLight);
+       // Helper vẽ hình chữ nhật bo góc tương thích mọi trình duyệt
+    function drawRoundRect(ctx, x, y, w, h, r) {
+      if (typeof ctx.roundRect === "function") {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        return;
+      }
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
 
     // Dynamic Canvas Textures
     function createFrontTexture(name) {
       const cv = document.createElement("canvas");
-      cv.width = 1024;
-      cv.height = 680;
+      cv.width = 2048;
+      cv.height = 1360;
       const ctx = cv.getContext("2d");
 
-      // Nền phong bì sage green nhẹ
-      const grad = ctx.createLinearGradient(0, 0, 1024, 680);
+      // Nền phong bì sage green sang trọng
+      const grad = ctx.createLinearGradient(0, 0, 2048, 1360);
       grad.addColorStop(0, "#e8f2ea");
       grad.addColorStop(0.5, "#d6e6d9");
       grad.addColorStop(1, "#c8dacb");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1024, 680);
+      ctx.fillRect(0, 0, 2048, 1360);
 
       // Vân giấy tinh tế
       ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-      for (let i = 0; i < 400; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 680;
-        ctx.fillRect(x, y, 2, 2);
+      for (let i = 0; i < 700; i++) {
+        const x = Math.random() * 2048;
+        const y = Math.random() * 1360;
+        ctx.fillRect(x, y, 3, 3);
       }
 
-      // Khung viền đôi botanical vàng sage
-      ctx.strokeStyle = "rgba(82, 121, 93, 0.45)";
+      // Khung viền đôi botanical
+      ctx.strokeStyle = "rgba(35, 75, 45, 0.45)";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(72, 72, 2048 - 144, 1360 - 144);
+      ctx.strokeStyle = "rgba(35, 75, 45, 0.25)";
       ctx.lineWidth = 3;
-      ctx.strokeRect(36, 36, 1024 - 72, 680 - 72);
-      ctx.strokeStyle = "rgba(82, 121, 93, 0.2)";
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(46, 46, 1024 - 92, 680 - 92);
+      ctx.strokeRect(92, 92, 2048 - 184, 1360 - 184);
 
-      // Hoa văn 4 góc (corner motifs)
+      // Hoa văn 4 góc
       const drawCorner = (cx, cy) => {
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.fillStyle = "#52795d";
-        ctx.font = "20px serif";
-        ctx.fillText("❦", -8, 8);
+        ctx.fillStyle = "#1b4a28";
+        ctx.font = "38px serif";
+        ctx.fillText("❦", -15, 15);
         ctx.restore();
       };
-      drawCorner(58, 62);
-      drawCorner(1024 - 74, 62);
-      drawCorner(58, 680 - 52);
-      drawCorner(1024 - 74, 680 - 52);
+      drawCorner(116, 124);
+      drawCorner(2048 - 148, 124);
+      drawCorner(116, 1360 - 104);
+      drawCorner(2048 - 148, 1360 - 104);
 
       // Tiêu đề nhỏ
-      ctx.fillStyle = "#627566";
-      ctx.font = "500 22px 'Be Vietnam Pro', sans-serif";
+      ctx.fillStyle = "#1f4828";
+      ctx.font = "700 42px 'Be Vietnam Pro', sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("TRÂN TRỌNG GỬI ĐẾN", 512, 220);
+      ctx.fillText("TRÂN TRỌNG GỬI ĐẾN", 1024, 440);
 
-      // Tên khách mời (chữ thư pháp mềm mại)
-      ctx.fillStyle = "#24432c";
-      ctx.font = "600 58px 'Dancing Script', 'Playfair Display', cursive";
-      ctx.fillText(name || "Quý Khách", 512, 310);
+      // Tên khách mời sắc nét, rõ ràng
+      ctx.fillStyle = "#081d0d";
+      ctx.font = "bold 96px 'Playfair Display', 'Dancing Script', cursive, serif";
+      ctx.fillText(name || "Quý Khách", 1024, 620);
 
       // Đường kẻ trang trí dưới tên khách
-      ctx.strokeStyle = "#52795d";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "#275233";
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(380, 345);
-      ctx.lineTo(644, 345);
+      ctx.moveTo(760, 690);
+      ctx.lineTo(1288, 690);
       ctx.stroke();
 
-      ctx.fillStyle = "#52795d";
-      ctx.font = "18px serif";
-      ctx.fillText("❧", 512, 351);
+      ctx.fillStyle = "#275233";
+      ctx.font = "32px serif";
+      ctx.fillText("❧", 1024, 702);
 
       // Tên cô dâu chú rể ở góc dưới
-      ctx.fillStyle = "#52795d";
-      ctx.font = "600 26px 'Playfair Display', serif";
-      ctx.fillText("HỒ ĐẠT  &  THẢO NGỌC", 512, 530);
+      ctx.fillStyle = "#164023";
+      ctx.font = "700 52px 'Playfair Display', serif";
+      ctx.fillText("HỒ ĐẠT   &   THẢO NGỌC", 1024, 1050);
 
-      ctx.fillStyle = "#627566";
-      ctx.font = "400 18px 'Be Vietnam Pro', sans-serif";
-      ctx.fillText("25 . 10 . 2026", 512, 570);
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 36px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("25 . 10 . 2026", 1024, 1130);
 
-      return new THREE.CanvasTexture(cv);
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      if (renderer && renderer.capabilities) {
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      }
+      return tex;
     }
 
     function createBackTexture() {
@@ -216,108 +239,291 @@
       return new THREE.CanvasTexture(cv);
     }
 
-    // Lá thư siêu nét (High-Resolution 1200x860), thông tin đầy đủ từ thiệp cưới thực tế
+    // Lá thư siêu nét (Ultra High-Resolution 2400x1600), chữ to đậm sắc sảo, chống lóa 100%
     function createLetterTexture(name) {
       const cv = document.createElement("canvas");
-      cv.width = 1200;
-      cv.height = 860;
+      cv.width = 2400;
+      cv.height = 1600;
       const ctx = cv.getContext("2d");
 
-      // Nền giấy thư ngọc ngà sang trọng với viền phủ mờ
-      const grad = ctx.createLinearGradient(0, 0, 1200, 860);
+      // 1. Nền giấy mỹ thuật ngọc ngà với bề mặt mịn màng
+      const grad = ctx.createLinearGradient(0, 0, 2400, 1600);
       grad.addColorStop(0, "#ffffff");
-      grad.addColorStop(0.5, "#fafcf9");
+      grad.addColorStop(0.65, "#fbfdfb");
       grad.addColorStop(1, "#f2f7f3");
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1200, 860);
+      ctx.fillRect(0, 0, 2400, 1600);
 
-      // Viền đôi hoàng gia
-      ctx.strokeStyle = "rgba(193, 215, 197, 0.85)";
-      ctx.lineWidth = 5;
-      ctx.strokeRect(36, 36, 1200 - 72, 860 - 72);
+      // 2. Viền đôi hoàng gia Botanical sang trọng
+      ctx.strokeStyle = "#1b4a28";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(48, 48, 2400 - 96, 1600 - 96);
 
-      ctx.strokeStyle = "#52795d";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(48, 48, 1200 - 96, 860 - 96);
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.45)";
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(64, 64, 2400 - 128, 1600 - 128);
 
-      // Họa tiết góc
+      // Họa tiết góc cổ điển
       const drawCorner = (cx, cy) => {
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.fillStyle = "#52795d";
-        ctx.font = "26px serif";
-        ctx.fillText("❦", -12, 12);
+        ctx.fillStyle = "#1b4a28";
+        ctx.font = "bold 44px serif";
+        ctx.fillText("❦", -18, 18);
         ctx.restore();
       };
-      drawCorner(70, 75);
-      drawCorner(1200 - 75, 75);
-      drawCorner(70, 860 - 65);
-      drawCorner(1200 - 75, 860 - 65);
+      drawCorner(104, 110);
+      drawCorner(2400 - 104, 110);
+      drawCorner(104, 1600 - 98);
+      drawCorner(2400 - 104, 1600 - 98);
 
-      // 1. Dòng tiêu đề đầu
-      ctx.fillStyle = "#52795d";
-      ctx.font = "600 24px 'Playfair Display', serif";
       ctx.textAlign = "center";
-      ctx.fillText("— ❦   SAVE THE DATE   ❦ —", 600, 130);
 
-      // 2. Lời báo hỷ
-      ctx.fillStyle = "#627566";
-      ctx.font = "500 19px 'Be Vietnam Pro', sans-serif";
-      ctx.fillText("TRÂN TRỌNG BÁO HỶ & KÍNH MỜI", 600, 170);
+      // 3. Tiêu đề đầu (chữ to rõ, sang trọng)
+      ctx.fillStyle = "#164023";
+      ctx.font = "700 46px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("— ❦   SAVE THE DATE   ❦ —", 1200, 115);
 
-      // 3. Tên Cô Dâu & Chú Rể
-      ctx.fillStyle = "#24432c";
-      ctx.font = "700 56px 'Playfair Display', serif";
-      ctx.fillText("HỒ ĐẠT   &   THẢO NGỌC", 600, 250);
+      // 4. Lời báo hỷ
+      ctx.fillStyle = "#275233";
+      ctx.font = "700 32px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("TRÂN TRỌNG BÁO HỶ & KÍNH MỜI", 1200, 165);
 
-      ctx.fillStyle = "#52795d";
-      ctx.font = "italic 20px 'Playfair Display', serif";
-      ctx.fillText("(Út Nam)                                (Thứ Nữ)", 600, 280);
+      // 5. Tên Cô Dâu & Chú Rể — Chữ to 102px, mực ngọc đậm tối cao cấp, cực kỳ nổi bật
+      ctx.fillStyle = "#081d0e";
+      ctx.font = "800 102px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("HỒ ĐẠT", 760, 260);
 
-      // 4. Kính mời khách
-      ctx.fillStyle = "#52795d";
-      ctx.font = "600 38px 'Dancing Script', 'Playfair Display', cursive";
-      ctx.fillText("Kính mời: " + (name || "Quý Khách"), 600, 350);
+      ctx.fillStyle = "#2b5635";
+      ctx.font = "italic 600 80px 'Playfair Display', serif";
+      ctx.fillText("&", 1200, 260);
 
-      // Đường kẻ phân cách
-      ctx.strokeStyle = "#52795d";
+      ctx.fillStyle = "#081d0e";
+      ctx.font = "800 102px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("THẢO NGỌC", 1640, 260);
+
+      // Thứ bậc
+      ctx.fillStyle = "#275233";
+      ctx.font = "italic 600 34px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("(Út Nam)", 760, 312);
+      ctx.fillText("(Thứ Nữ)", 1640, 312);
+
+      // 6. Khung Kính Mời Khách to rõ, trang trọng
+      drawRoundRect(ctx, 560, 345, 1280, 82, 41);
+      ctx.fillStyle = "#edf5ef";
+      ctx.fill();
+      ctx.strokeStyle = "#7da586";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "bold 46px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("🌿   Kính mời: " + (name || "Quý Khách") + "   🌿", 1200, 398);
+
+      // 7. Thông tin hai bên gia đình (chữ đậm 34px)
+      // Nhà Trai
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("NHÀ TRAI", 680, 460);
+
+      ctx.fillStyle = "#081d0e";
+      ctx.font = "800 34px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("Ông HỒ VĂN NHUNG — Bà VŨ THỊ LÝ", 680, 498);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("📍 Tân Dân, Tỉnh Thanh Hóa", 680, 534);
+
+      // Vạch phân cách giữa hai gia đình
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(1200, 455);
+      ctx.lineTo(1200, 545);
+      ctx.stroke();
+
+      ctx.fillStyle = "#2b5635";
+      ctx.font = "22px serif";
+      ctx.fillText("❦", 1200, 502);
+
+      // Nhà Gái
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("NHÀ GÁI", 1720, 460);
+
+      ctx.fillStyle = "#081d0e";
+      ctx.font = "800 34px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("Ông NGUYỄN ĐỨC MẠNH — Bà LÊ THỊ KIM PHƯƠNG", 1720, 498);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("📍 Quốc Oai, TP. Hà Nội", 1720, 534);
+
+      // 8. HAI THẺ SỰ KIỆN NỔI BẬT (HIGHLIGHT EVENT CARDS) — Mở rộng tối đa
+      // Thẻ Trái: LỄ VU QUY (HÀ NỘI)
+      drawRoundRect(ctx, 80, 575, 1095, 760, 24);
+      ctx.fillStyle = "#f3f8f4";
+      ctx.fill();
+      ctx.strokeStyle = "#7da586";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      drawRoundRect(ctx, 105, 598, 1045, 74, 16);
+      ctx.fillStyle = "#164023";
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 36px 'Be Vietnam Pro', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💍 LỄ VU QUY (HÀ NỘI)", 627, 646);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "700 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("HÔN LỄ TỔ CHỨC TẠI NHÀ GÁI", 627, 706);
+
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.35)";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(420, 380);
-      ctx.lineTo(780, 380);
+      ctx.moveTo(125, 730);
+      ctx.lineTo(1130, 730);
       ctx.stroke();
-      ctx.fillStyle = "#52795d";
-      ctx.font = "20px serif";
-      ctx.fillText("💚", 600, 388);
 
-      // 5. Thông tin hai gia đình
-      ctx.fillStyle = "#4a5e4d";
-      ctx.font = "500 19px 'Be Vietnam Pro', sans-serif";
-      ctx.fillText("Nhà Trai: Ông HỒ VĂN NHUNG — Bà VŨ THỊ LÝ (Tân Dân, Thanh Hóa)", 600, 440);
-      ctx.fillText("Nhà Gái: Ông NGUYỄN ĐỨC MẠNH — Bà LÊ THỊ KIM PHƯƠNG (Quốc Oai, Hà Nội)", 600, 475);
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("🍽️  TIỆC MỪNG:", 135, 775);
 
-      // 6. Hai mốc sự kiện lớn
-      ctx.fillStyle = "#24432c";
-      ctx.font = "700 24px 'Playfair Display', serif";
-      ctx.fillText("💍 LỄ VU QUY (HÀ NỘI): 10:00 • 21.10.2026 (12.09 ÂL)", 600, 550);
-      ctx.fillStyle = "#627566";
-      ctx.font = "18px 'Be Vietnam Pro', sans-serif";
-      ctx.fillText("📍 Tại Gia Hưng — Số 01 Đường Hoàng Xá, Thôn Phủ Quốc, Quốc Oai, Hà Nội", 600, 582);
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 42px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("16:00 • Thứ Ba, 20.10.2026", 135, 825);
 
-      ctx.fillStyle = "#24432c";
-      ctx.font = "700 24px 'Playfair Display', serif";
-      ctx.fillText("💒 LỄ THÀNH HÔN (THANH HÓA): 09:00 • 25.10.2026 (16.09 ÂL)", 600, 645);
-      ctx.fillStyle = "#627566";
-      ctx.font = "18px 'Be Vietnam Pro', sans-serif";
-      ctx.fillText("📍 Tại Nhà Đa Năng Phường Tân Dân, Tỉnh Thanh Hóa", 600, 677);
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("(Tức ngày 11 tháng 09 năm Bính Ngọ)", 135, 868);
 
-      // 7. Lời cảm ơn từ thiệp cưới thực tế
-      ctx.fillStyle = "#4a5e4d";
-      ctx.font = "italic 21px 'Playfair Display', serif";
-      ctx.fillText('"Thật sự hạnh phúc và vinh dự khi nhận được tình cảm', 600, 750);
-      ctx.fillText('và sự hiện diện của bạn trong ngày vui của gia đình!"', 600, 782);
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("💒  LỄ VU QUY:", 135, 935);
 
-      return new THREE.CanvasTexture(cv);
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 42px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("10:00 • Thứ Tư, 21.10.2026", 135, 985);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("(Tức ngày 12 tháng 09 năm Bính Ngọ)", 135, 1028);
+
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(125, 1060);
+      ctx.lineTo(1130, 1060);
+      ctx.stroke();
+
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("📍  ĐỊA ĐIỂM TỔ CHỨC:", 135, 1105);
+
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 40px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("TƯ GIA HƯNG", 135, 1155);
+
+      ctx.fillStyle = "#214929";
+      ctx.font = "600 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("Số 01 Đường Hoàng Xá, Thôn Phủ Quốc,", 135, 1205);
+      ctx.fillText("Huyện Quốc Oai, TP. Hà Nội", 135, 1248);
+
+      // Thẻ Phải: LỄ THÀNH HÔN (THANH HÓA)
+      drawRoundRect(ctx, 1225, 575, 1095, 760, 24);
+      ctx.fillStyle = "#f3f8f4";
+      ctx.fill();
+      ctx.strokeStyle = "#7da586";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      drawRoundRect(ctx, 1250, 598, 1045, 74, 16);
+      ctx.fillStyle = "#164023";
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 36px 'Be Vietnam Pro', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("💒 LỄ THÀNH HÔN (THANH HÓA)", 1772, 646);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "700 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("HÔN LỄ TỔ CHỨC TẠI NHÀ TRAI", 1772, 706);
+
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(1270, 730);
+      ctx.lineTo(2275, 730);
+      ctx.stroke();
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("💒  LỄ THÀNH HÔN:", 1280, 775);
+
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 42px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("09:00 • Chủ Nhật, 25.10.2026", 1280, 825);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("(Tức ngày 16 tháng 09 năm Bính Ngọ)", 1280, 868);
+
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("🍽️  TIỆC MỪNG CHUNG VUI:", 1280, 935);
+
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 42px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("10:00 • Chủ Nhật, 25.10.2026", 1280, 985);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "600 26px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("(Tức ngày 16 tháng 09 năm Bính Ngọ)", 1280, 1028);
+
+      ctx.strokeStyle = "rgba(79, 128, 92, 0.35)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(1270, 1060);
+      ctx.lineTo(2275, 1060);
+      ctx.stroke();
+
+      ctx.fillStyle = "#164023";
+      ctx.font = "800 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("📍  ĐỊA ĐIỂM TỔ CHỨC:", 1280, 1105);
+
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "900 40px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText("NHÀ ĐA NĂNG PHƯỜNG TÂN DÂN", 1280, 1155);
+
+      ctx.fillStyle = "#214929";
+      ctx.font = "600 28px 'Be Vietnam Pro', sans-serif";
+      ctx.fillText("Phường Tân Dân, Thị xã Nghi Sơn,", 1280, 1205);
+      ctx.fillText("Tỉnh Thanh Hóa", 1280, 1248);
+
+      // 9. Lời chúc và tri ân chân thành (chữ to 36px)
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#061a0b";
+      ctx.font = "italic 700 36px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
+      ctx.fillText('"Thật sự hạnh phúc và vinh dự khi nhận được tình cảm', 1200, 1410);
+      ctx.fillText('và sự hiện diện của bạn trong ngày vui của gia đình!"', 1200, 1460);
+
+      ctx.fillStyle = "#275233";
+      ctx.font = "32px serif";
+      ctx.fillText("❦   —   💚   —   ❦", 1200, 1520);
+
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.generateMipmaps = true;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      if (renderer && renderer.capabilities) {
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      }
+      return tex;
     }
 
     // Build 3D Envelope Mesh Group
@@ -345,25 +551,43 @@
     const frontGeo = new THREE.PlaneGeometry(envW, envH);
     const frontMat = new THREE.MeshStandardMaterial({
       map: createFrontTexture(guestName),
-      roughness: 0.5,
-      metalness: 0.05,
+      roughness: 0.65,
+      metalness: 0.0,
     });
     const frontMesh = new THREE.Mesh(frontGeo, frontMat);
     frontMesh.position.z = envD / 2;
     frontMesh.receiveShadow = true;
     envelopeGroup.add(frontMesh);
 
-    // Lá thư bên trong (Letter Card)
+    // Lá thư bên trong (Letter Card) — Dùng MeshBasicMaterial để giữ độ tương phản 100% không bị đèn 3D làm bạc màu
     const letterGeo = new THREE.PlaneGeometry(envW * 0.94, envH * 0.94);
-    const letterMat = new THREE.MeshStandardMaterial({
+    const letterMat = new THREE.MeshBasicMaterial({
       map: createLetterTexture(guestName),
-      roughness: 0.35,
-      metalness: 0.05,
       side: THREE.DoubleSide,
+      toneMapped: false,
     });
     const letterMesh = new THREE.Mesh(letterGeo, letterMat);
     letterMesh.position.set(0, 0, 0.01);
+    letterMesh.visible = false; // Bỏ phần thiệp 3D này theo yêu cầu, mở thiệp sẽ chỉ hiện thiệp hoàng gia HTML
     envelopeGroup.add(letterMesh);
+
+    // Tự động vẽ lại nét hơn khi font Google hoàn tất tải về
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        try {
+          if (letterMat) {
+            letterMat.map = createLetterTexture(guestName);
+            letterMat.map.needsUpdate = true;
+          }
+          if (frontMat) {
+            frontMat.map = createFrontTexture(guestName);
+            frontMat.map.needsUpdate = true;
+          }
+        } catch (e) {
+          console.warn("Font refresh on canvas error:", e);
+        }
+      });
+    }
 
     // Nắp phong bì (Top Flap) với trục xoay Pivot
     const flapPivot = new THREE.Group();
@@ -518,8 +742,8 @@
           triggerOpen();
         }
       } else if (state === 2) {
-        // Chạm vào lá thư khi đang ở trạng thái đọc để hiển thị chi tiết thiệp
-        const intersects = raycaster.intersectObjects([letterMesh], true);
+        // Chạm vào phong bì đã mở để hiển thị lại chi tiết thiệp hoàng gia
+        const intersects = raycaster.intersectObjects([frontMesh, backMesh, flapMesh], true);
         if (intersects.length > 0) {
           if (typeof window.showLetterModal === "function") {
             window.showLetterModal();
@@ -551,7 +775,7 @@
         openBtn.style.pointerEvents = "none";
       }
       if (envHint) {
-        envHint.textContent = "✨ Lá thiệp hạnh phúc đang mở ra... ✨";
+        envHint.textContent = "Lá thiệp hạnh phúc đang mở ra... ";
       }
 
       // Ẩn con dấu sau khi nổ hạt
@@ -561,7 +785,7 @@
       }, 160);
     }
 
-    // Chuyển cảnh từ lá thư vào nội dung chính
+    // Chuyển cảnh từ phong bì vào nội dung chính
     function proceedToContent() {
       if (state >= 3) return;
       state = 3;
@@ -572,12 +796,12 @@
         openBtn.textContent = "💚 Đang vào lễ cưới...";
       }
 
-      // Diễn hoạt lá thư tiến thẳng về camera và tan mờ mượt mà
+      // Diễn hoạt phong bì tiến thẳng về camera và tan mờ mượt mà
       let fadeOutProgress = 0;
       function fadeOutStep() {
         fadeOutProgress += 0.035;
-        letterMesh.position.z += 0.12;
-        letterMesh.scale.multiplyScalar(1.018);
+        envelopeGroup.position.z += 0.12;
+        envelopeGroup.scale.multiplyScalar(1.02);
 
         if (fadeOutProgress < 1.0) {
           requestAnimationFrame(fadeOutStep);
@@ -602,18 +826,20 @@
     window.addEventListener("touchend", onPointerUp, { passive: true });
     dom.addEventListener("touchend", onClick);
 
-    // Resize Handler — căn chỉnh camera tự động đảm bảo toàn bộ thiệp luôn lọt trọn trong khung nhìn
+    // Resize Handler — căn chỉnh camera tự động đảm bảo phong bì 3D luôn lọt trọn trong khung nhìn
     function onResize() {
       const w = container.clientWidth || window.innerWidth;
       const h = container.clientHeight || window.innerHeight;
       const aspect = w / h;
       camera.aspect = aspect;
 
-      // Cần bao quát được chiều cao ~4.8 (khi phong bì hạ xuống và lá thư ở giữa) và chiều rộng ~4.4
       const fovRad = (camera.fov * Math.PI) / 180;
-      const distV = (4.8 / 2) / Math.tan(fovRad / 2);
-      const distH = (4.4 / 2) / (Math.tan(fovRad / 2) * aspect);
-      camera.position.z = Math.max(7.2, Math.max(distV, distH) * 1.18);
+      const isMobile = w < 600;
+      const requiredH = isMobile ? 4.8 : 3.8;
+      const requiredW = isMobile ? 4.6 : 4.4;
+      const distV = (requiredH / 2) / Math.tan(fovRad / 2);
+      const distH = (requiredW / 2) / (Math.tan(fovRad / 2) * aspect);
+      camera.position.z = Math.max(distV, distH) * (isMobile ? 1.05 : 1.0);
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     }
@@ -655,41 +881,32 @@
         if (particleMat.opacity <= 0) particlesActive = false;
       }
 
-      // GIAI ĐOẠN 1: Mở nắp lật và hạ phong bì xuống, đưa lá thư ra CHÍNH GIỮA màn hình
+      // GIAI ĐOẠN 1: Mở nắp phong bì và tự động hiển thị thiệp hoàng gia HTML
       if (state === 1) {
-        openProgress += 0.0072; // Tốc độ mở chậm rãi, tinh tế
+        openProgress += 0.014; // Tốc độ mở nắp mượt mà
 
-        // Bước 1.1: Mở nắp lật (0 -> 0.35)
-        if (openProgress <= 0.35) {
-          const t = openProgress / 0.35;
+        // Bước 1.1: Mở nắp lật (0 -> 0.6)
+        if (openProgress <= 0.6) {
+          const t = openProgress / 0.6;
           flapPivot.rotation.x = -easeOutCubic(t) * Math.PI * 0.94;
         }
 
-        // Bước 1.2: Phong bì trượt hạ xuống, lá thư trượt nhô ra và căn CHÍNH GIỮA màn hình (0.22 -> 1.0)
-        if (openProgress > 0.22) {
-          const t = Math.min(1, (openProgress - 0.22) / 0.78);
-          const easeT = easeOutCubic(t);
-
-          // Phong bì hạ xuống dưới để nhường trung tâm cho lá thiệp
-          envelopeGroup.position.y = -easeT * 1.35;
-
-          // Lá thư trượt lên trên phong bì và tiến về phía trước (world Y: -1.35 + 1.75 = +0.40)
-          letterMesh.position.y = easeT * 1.75;
-          letterMesh.position.z = 0.05 + easeT * 1.7; // Tiến gần camera, hoàn toàn vượt ra trước phong bì
-          const scale = 1 + easeT * 0.12;
-          letterMesh.scale.set(scale, scale, 1);
+        // Bước 1.2: Phong bì hơi hạ nhẹ xuống tự nhiên (0.2 -> 0.7)
+        if (openProgress > 0.2) {
+          const t = Math.min(1, (openProgress - 0.2) / 0.5);
+          envelopeGroup.position.y = -easeOutCubic(t) * 0.35;
         }
 
-        // Bước 1.3: Khi lá thư đã mở hoàn tất → Chuyển sang GIAI ĐOẠN 2: ĐỌC THIỆP (READING STATE)
-        if (openProgress >= 1.0) {
-          state = 2; // Chuyển sang chế độ đọc thiệp
+        // Bước 1.3: Khi nắp phong bì đã mở hoàn tất → Chuyển sang GIAI ĐOẠN 2 & TỰ ĐỘNG HIỆN THIỆP HOÀNG GIA HTML
+        if (openProgress >= 0.65) {
+          state = 2; // Chuyển sang chế độ đã mở
 
-          // Hiển thị ngay bảng thiệp mời chi tiết sắc nét toàn màn hình
+          // TỰ ĐỘNG BẬT THIỆP HOÀNG GIA HTML ĐẦY ĐỦ CHI TIẾT
           if (typeof window.showLetterModal === "function") {
             window.showLetterModal();
           }
 
-          // Cập nhật nút bấm
+          // Cập nhật nút bấm giao diện
           const openBtn = document.getElementById("open-invite");
           const viewBtn = document.getElementById("view-card-btn");
           const envHint = document.getElementById("env-hint");
@@ -701,6 +918,7 @@
           }
           if (viewBtn) {
             viewBtn.classList.remove("hidden");
+            viewBtn.textContent = "📜 Xem Lại Thiệp";
             viewBtn.onclick = () => {
               if (typeof window.showLetterModal === "function") window.showLetterModal();
             };
@@ -711,9 +929,9 @@
         }
       }
 
-      // GIAI ĐOẠN 2: Lá thư lơ lửng nhẹ nhàng trước mắt người xem ở chính giữa
+      // GIAI ĐOẠN 2: Phong bì lơ lửng nhẹ nhàng trong nền
       if (state === 2) {
-        letterMesh.position.y = 1.75 + Math.sin(elapsedTime * 1.5) * 0.03;
+        envelopeGroup.position.y = -0.35 + Math.sin(elapsedTime * 1.5) * 0.04;
       }
 
       renderer.render(scene, camera);

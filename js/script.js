@@ -8,7 +8,7 @@ const CONFIG = {
   weddingDateISO: "2026-10-25T09:00:00+07:00",
 
   // Link Google Maps của 2 địa điểm chính xác từ thiệp cưới
-  mapGroom: "https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+%C4%90a+N%C4%83ng+Ph%C6%B0%E1%BB%9Dng+T%C3%A2n+D%C3%A2n+Thanh+H%C3%B3a",   // Nhà Đa Năng P. Tân Dân, Thanh Hóa
+  mapGroom: "https://www.google.com/maps/place/19%C2%B031'34.4%22N+105%C2%B047'40.5%22E/@19.526233,105.7939283,19z/data=!3m1!4b1!4m4!3m3!8m2!3d19.526233!4d105.794572?entry=ttu&g_ep=EgoyMDI2MDkyOS4wIKXMDSoASAFQAw%3D%3D",   // Nhà Đa Năng P. Tân Dân, Thanh Hóa
   mapBride: "https://www.google.com/maps/search/?api=1&query=S%E1%BB%91+01+%C4%90%C6%B0%E1%BB%9Dng+Ho%C3%A0ng+X%C3%A1+Qu%E1%BB%91c+Oai+H%C3%A0+N%E1%BB%99i",   // Gia Hưng, Quốc Oai, Hà Nội
 
   // Tài khoản ngân hàng nhận mừng cưới.
@@ -19,6 +19,10 @@ const CONFIG = {
 
   // Nhạc nền
   musicFile: "Váy Cưới.mp3",
+
+  // URL Web App triển khai từ Google Apps Script để lưu Lời Chúc & RSVP tự động vào Google Sheets
+  // Dán link lấy từ Google Sheets (dạng https://script.google.com/macros/s/.../exec) vào đây:
+  sheetScriptUrl: "https://script.google.com/macros/s/AKfycbz395ZVK0-3JzAGNmMjVFF7fF-pjcTR2z0MoDrTiaR-jpLXvi3baGEmW2AQHcDQhBFSvQ/exec",
 };
 
 /* Danh sách toàn bộ ảnh trong album */
@@ -33,12 +37,21 @@ const PHOTOS = [
 ];
 
 /* ============================================================
-   TÊN KHÁCH MỜI — đọc từ ?guest= trên URL
-   Ví dụ: index.html?guest=bạn Minh Hiếu
+   TÊN KHÁCH MỜI — đọc từ ?guest= / ?to= / ?ten= / ?k= / ?u= trên URL
+   Ví dụ: index.html?guest=Anh+Tuấn hoặc index.html?to=Bạn+Lan
    ============================================================ */
 function getGuestName() {
-  const g = new URLSearchParams(window.location.search).get("guest");
-  return g && g.trim() ? g.trim() : "Quý Khách";
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get("guest") || params.get("to") || params.get("ten") || params.get("k") || params.get("u");
+  if (raw && raw.trim()) {
+    try {
+      const decoded = decodeURIComponent(raw.replace(/\+/g, " ")).trim();
+      return decoded || "Quý Khách";
+    } catch {
+      return raw.replace(/\+/g, " ").trim() || "Quý Khách";
+    }
+  }
+  return "Quý Khách";
 }
 
 /* ============================================================
@@ -74,7 +87,7 @@ function revealInvitationContent() {
 /* ============================================================
    BẢN THIỆP MỜI TRANG TRỌNG (FULL DIGITAL LETTER MODAL)
    ============================================================ */
-window.showLetterModal = function() {
+window.showLetterModal = function () {
   const modal = document.getElementById("letter-modal");
   const guest = getGuestName();
   const guestEl = document.getElementById("rl-guest-name");
@@ -88,7 +101,7 @@ window.showLetterModal = function() {
   if (viewBtn) viewBtn.classList.remove("hidden");
 };
 
-window.hideLetterModal = function() {
+window.hideLetterModal = function () {
   const modal = document.getElementById("letter-modal");
   if (modal) {
     modal.classList.remove("show");
@@ -141,7 +154,7 @@ setTimeout(showEnvelope, 4500);
 
 document.getElementById("open-invite").addEventListener("click", () => {
   // Phát nhạc ngay khi khách bấm mở thiệp
-  bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
+  bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => { });
 
   if (threeEnvelope) {
     threeEnvelope.triggerOpen();
@@ -158,7 +171,7 @@ document.getElementById("open-invite").addEventListener("click", () => {
 // Cho phép chạm vào canvas 3D cũng kích hoạt phát nhạc
 document.getElementById("envelope-3d-box").addEventListener("click", () => {
   if (bgMusic.paused) {
-    bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
+    bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => { });
   }
 });
 
@@ -167,7 +180,7 @@ document.getElementById("envelope-3d-box").addEventListener("click", () => {
    ============================================================ */
 musicBtn.addEventListener("click", () => {
   if (bgMusic.paused) {
-    bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
+    bgMusic.play().then(() => musicBtn.classList.add("playing")).catch(() => { });
   } else {
     bgMusic.pause();
     musicBtn.classList.remove("playing");
@@ -315,33 +328,119 @@ function renderWishes() {
 }
 renderWishes();
 
-document.getElementById("wish-form").addEventListener("submit", (e) => {
+// Hàm gửi dữ liệu bất đồng bộ đến Google Sheets qua Google Apps Script
+async function sendToGoogleSheet(payload) {
+  if (!CONFIG.sheetScriptUrl || !CONFIG.sheetScriptUrl.trim()) {
+    console.log("Chưa cấu hình CONFIG.sheetScriptUrl — Dữ liệu đang được lưu tạm trên trình duyệt (localStorage).");
+    return { status: "local_only" };
+  }
+
+  try {
+    await fetch(CONFIG.sheetScriptUrl, {
+      method: "POST",
+      mode: "no-cors",
+      cache: "no-cache",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return { status: "success" };
+  } catch (err) {
+    console.warn("Không thể gửi dữ liệu đến Google Sheets:", err);
+    return { status: "error", error: err };
+  }
+}
+
+document.getElementById("wish-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const nameEl = document.getElementById("wish-name");
   const msgEl = document.getElementById("wish-msg");
+  const submitBtn = document.getElementById("wish-submit-btn");
+  const thanksEl = document.getElementById("wish-thanks");
+
+  const name = nameEl.value.trim() || "Khách mời";
+  const msg = msgEl.value.trim();
+  if (!msg) return;
+
+  // Hiệu ứng đang gửi
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Đang gửi lời chúc...";
+  }
+
+  // 1. Gửi lên Google Sheets (nếu đã cấu hình link)
+  const payload = {
+    action: "wish",
+    name: name,
+    msg: msg,
+    time: new Date().toISOString(),
+  };
+  await sendToGoogleSheet(payload);
+
+  // 2. Lưu dự phòng trên máy khách
   const wishes = loadWishes();
-  wishes.unshift({ name: nameEl.value.trim(), msg: msgEl.value.trim() });
+  wishes.unshift({ name, msg });
   localStorage.setItem(WISH_KEY, JSON.stringify(wishes.slice(0, 100)));
+
+  // 3. Phản hồi giao diện
   msgEl.value = "";
+  if (thanksEl) {
+    thanksEl.classList.remove("hidden");
+    setTimeout(() => thanksEl.classList.add("hidden"), 6000);
+  }
+  if (submitBtn) {
+    submitBtn.textContent = "Đã Gửi Thành Công ✅";
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Gửi Lời Chúc 💌";
+    }, 3000);
+  }
   renderWishes();
 });
 
 /* ============================================================
    RSVP — XÁC NHẬN THAM DỰ
    ============================================================ */
-document.getElementById("rsvp-form").addEventListener("submit", (e) => {
+document.getElementById("rsvp-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const record = {
-    name: document.getElementById("rsvp-name").value.trim(),
-    attend: document.querySelector('input[name="attend"]:checked').value,
-    count: document.getElementById("rsvp-count").value,
+  const nameEl = document.getElementById("rsvp-name");
+  const attendChoice = document.querySelector('input[name="attend"]:checked');
+  const countEl = document.getElementById("rsvp-count");
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const thanksEl = document.getElementById("rsvp-thanks");
+
+  const name = nameEl.value.trim() || "Khách mời";
+  const attend = attendChoice ? attendChoice.value : "yes";
+  const count = countEl ? countEl.value : "1";
+
+  // Hiệu ứng đang ghi nhận
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Đang ghi nhận...";
+  }
+
+  const payload = {
+    action: "rsvp",
+    name: name,
+    attend: attend,
+    count: count,
     time: new Date().toISOString(),
   };
+
+  // 1. Gửi lên Google Sheets
+  await sendToGoogleSheet(payload);
+
+  // 2. Lưu dự phòng vào localStorage máy khách
   const all = JSON.parse(localStorage.getItem("dn_rsvp") || "[]");
-  all.push(record);
+  all.push(payload);
   localStorage.setItem("dn_rsvp", JSON.stringify(all));
-  document.getElementById("rsvp-thanks").classList.remove("hidden");
-  e.target.querySelector('button[type="submit"]').disabled = true;
+
+  // 3. Phản hồi giao diện
+  if (thanksEl) {
+    thanksEl.classList.remove("hidden");
+  }
+  if (submitBtn) {
+    submitBtn.textContent = "Đã Xác Nhận ✅";
+  }
 });
 
 // Điền sẵn tên khách mởi vào các form
