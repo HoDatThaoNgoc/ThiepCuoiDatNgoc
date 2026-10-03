@@ -22,7 +22,7 @@ const CONFIG = {
 
   // URL Web App triển khai từ Google Apps Script để lưu Lời Chúc & RSVP tự động vào Google Sheets
   // Dán link lấy từ Google Sheets (dạng https://script.google.com/macros/s/.../exec) vào đây:
-  sheetScriptUrl: "https://script.google.com/macros/s/AKfycbz395ZVK0-3JzAGNmMjVFF7fF-pjcTR2z0MoDrTiaR-jpLXvi3baGEmW2AQHcDQhBFSvQ/exec",
+  sheetScriptUrl: "https://script.google.com/macros/s/AKfycbynVPL3kTIPvWdns-5a2Sa7Vt7P6Te4aTl-TPua0Hkduk2lCIwlIOD_gBihH-MmG1wvRg/exec",
 };
 
 /* Danh sách toàn bộ ảnh trong album */
@@ -297,36 +297,103 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* ============================================================
-   SỔ LƯU BÚT (lưu trên trình duyệt — localStorage)
+   SỔ LƯU BÚT — ĐỒNG BỘ TRỰC TIẾP VỚI GOOGLE SHEETS
    ============================================================ */
 const WISH_KEY = "dn_wishes";
-const DEFAULT_WISHES = [
-  { name: "Gia Đình", msg: "Chúc hai con trăm năm hạnh phúc, đầu bạc răng long!" },
-  { name: "Hội Bạn Thân", msg: "Chúc mừng hạnh phúc Đạt & Ngọc! Mãi bên nhau bạn nhé 💚" },
-];
 
-function loadWishes() {
-  try { return JSON.parse(localStorage.getItem(WISH_KEY)) || []; }
-  catch { return []; }
+function loadCachedWishes() {
+  try {
+    const raw = localStorage.getItem(WISH_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 }
 
-function renderWishes() {
+function saveCachedWishes(wishes) {
+  try {
+    localStorage.setItem(WISH_KEY, JSON.stringify(wishes.slice(0, 100)));
+  } catch { }
+}
+
+function renderWishes(wishes) {
   const list = document.getElementById("wish-list");
-  const wishes = [...loadWishes(), ...DEFAULT_WISHES];
+  if (!list) return;
+
+  const currentWishes = Array.isArray(wishes) ? wishes : loadCachedWishes();
   list.innerHTML = "";
-  wishes.forEach((w) => {
+
+  const countBar = document.getElementById("wish-count-bar");
+
+  if (currentWishes.length === 0) {
+    if (countBar) countBar.innerHTML = "";
+    const emptyBox = document.createElement("div");
+    emptyBox.className = "wish-empty";
+    emptyBox.innerHTML = "<p>Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc tới Đạt &amp; Ngọc nhé! 💚</p>";
+    list.appendChild(emptyBox);
+    return;
+  }
+
+  if (countBar) {
+    countBar.innerHTML =
+      `<span>💌 <b>${currentWishes.length}</b> lời chúc gửi tặng đôi uyên ương</span>` +
+      (currentWishes.length > 3 ? `<span class="wish-scroll-hint">Cuộn xem thêm ↕</span>` : "");
+  }
+
+  currentWishes.forEach((w) => {
     const card = document.createElement("div");
     card.className = "wish-card";
+
+    const head = document.createElement("div");
+    head.className = "wish-card-head";
+
     const strong = document.createElement("strong");
-    strong.textContent = w.name;
+    strong.textContent = w.name || "Khách mời";
+    head.appendChild(strong);
+
+    if (w.time) {
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "wish-time";
+      timeSpan.textContent = w.time;
+      head.appendChild(timeSpan);
+    }
+    card.appendChild(head);
+
     const p = document.createElement("p");
-    p.textContent = w.msg;
-    card.appendChild(strong);
+    p.textContent = w.msg || "";
     card.appendChild(p);
+
     list.appendChild(card);
   });
 }
-renderWishes();
+
+// Tải lời chúc mới nhất từ Google Sheets
+async function fetchWishesFromSheet() {
+  if (!CONFIG.sheetScriptUrl || !CONFIG.sheetScriptUrl.trim()) return;
+
+  try {
+    const cacheBuster = "t=" + Date.now();
+    const fetchUrl = CONFIG.sheetScriptUrl + (CONFIG.sheetScriptUrl.includes("?") ? "&" : "?") + cacheBuster;
+    const res = await fetch(fetchUrl, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (data && data.status === "success" && Array.isArray(data.wishes)) {
+      saveCachedWishes(data.wishes);
+      renderWishes(data.wishes);
+    }
+  } catch (err) {
+    console.warn("Không thể tải lời chúc từ Google Sheets (dùng cache):", err);
+  }
+}
+
+// Khởi chạy: hiển thị cache có sẵn ngay lập tức, đồng thời kéo lời chúc mới từ Google Sheets
+renderWishes(loadCachedWishes());
+fetchWishesFromSheet();
 
 // Hàm gửi dữ liệu bất đồng bộ đến Google Sheets qua Google Apps Script
 async function sendToGoogleSheet(payload) {
@@ -368,18 +435,21 @@ document.getElementById("wish-form").addEventListener("submit", async (e) => {
   }
 
   // 1. Gửi lên Google Sheets (nếu đã cấu hình link)
+  const now = new Date();
+  const timeFormatted = now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) + " " + now.toLocaleDateString("vi-VN");
   const payload = {
     action: "wish",
     name: name,
     msg: msg,
-    time: new Date().toISOString(),
+    time: now.toISOString(),
   };
   await sendToGoogleSheet(payload);
 
-  // 2. Lưu dự phòng trên máy khách
-  const wishes = loadWishes();
-  wishes.unshift({ name, msg });
-  localStorage.setItem(WISH_KEY, JSON.stringify(wishes.slice(0, 100)));
+  // 2. Cập nhật ngay vào danh sách hiển thị
+  const wishes = loadCachedWishes();
+  wishes.unshift({ name, msg, time: timeFormatted });
+  saveCachedWishes(wishes);
+  renderWishes(wishes);
 
   // 3. Phản hồi giao diện
   msgEl.value = "";
@@ -394,7 +464,9 @@ document.getElementById("wish-form").addEventListener("submit", async (e) => {
       submitBtn.textContent = "Gửi Lời Chúc 💌";
     }, 3000);
   }
-  renderWishes();
+
+  // Tải lại sau 2.5s để đồng bộ dữ liệu chuẩn xác từ Sheet
+  setTimeout(fetchWishesFromSheet, 2500);
 });
 
 /* ============================================================
