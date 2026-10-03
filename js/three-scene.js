@@ -79,7 +79,7 @@
     scene.add(dirLight);
 
     const rimLight = new THREE.DirectionalLight(0xc2dec8, 0.45);
-       // Helper vẽ hình chữ nhật bo góc tương thích mọi trình duyệt
+    // Helper vẽ hình chữ nhật bo góc tương thích mọi trình duyệt
     function drawRoundRect(ctx, x, y, w, h, r) {
       if (typeof ctx.roundRect === "function") {
         ctx.beginPath();
@@ -497,7 +497,7 @@
 
       ctx.fillStyle = "#061a0b";
       ctx.font = "900 40px 'Playfair Display', 'Be Vietnam Pro', Georgia, serif";
-      ctx.fillText("NHÀ ĐA NĂNG PHƯỜNG TÂN DÂN", 1280, 1155);
+      ctx.fillText("NHÀ VĂN HÓA ĐA NĂNG PHƯỜNG TÂN DÂN", 1280, 1155);
 
       ctx.fillStyle = "#214929";
       ctx.font = "600 28px 'Be Vietnam Pro', sans-serif";

@@ -455,17 +455,23 @@ if (guestName !== "Quý Khách") {
    HỘP MỪNG CƯỚI — QR VietQR + nút sao chép
    ============================================================ */
 function setupGift(prefix, bank) {
-  document.getElementById("bank-" + prefix).textContent = bank.bankCode + " Bank";
-  document.getElementById("holder-" + prefix).textContent = bank.holder;
-  document.getElementById("acc-" + prefix).textContent = bank.accNo;
+  const bankEl = document.getElementById("bank-" + prefix);
+  if (!bankEl) return;
+  bankEl.textContent = bank.bankCode + " Bank";
+  const holderEl = document.getElementById("holder-" + prefix);
+  if (holderEl) holderEl.textContent = bank.holder;
+  const accEl = document.getElementById("acc-" + prefix);
+  if (accEl) accEl.textContent = bank.accNo;
   const qrImg = document.getElementById("qr-" + prefix);
-  if (bank.bankCode && bank.accNo) {
-    qrImg.src =
-      "https://img.vietqr.io/image/" + bank.bankCode + "-" + bank.accNo +
-      "-compact2.png?accountName=" + encodeURIComponent(bank.holder) +
-      "&addInfo=" + encodeURIComponent("Mung cuoi Dat & Ngoc");
-  } else {
-    qrImg.style.display = "none";
+  if (qrImg) {
+    if (bank.bankCode && bank.accNo) {
+      qrImg.src =
+        "https://img.vietqr.io/image/" + bank.bankCode + "-" + bank.accNo +
+        "-compact2.png?accountName=" + encodeURIComponent(bank.holder) +
+        "&addInfo=" + encodeURIComponent("Mung cuoi Dat & Ngoc");
+    } else {
+      qrImg.style.display = "none";
+    }
   }
 }
 setupGift("groom", CONFIG.bankGroom);
